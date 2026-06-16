@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Microsoft Copilot Chat for HR Prompt Library</title>
+  <link rel="icon" href="data:," />
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--cp-bg);
+      color: var(--cp-text);
+      line-height: 1.5;
+    }
+    .shell { max-width: 1180px; margin: 0 auto; padding: 32px 20px 56px; }
+    .hero {
+      background: var(--cp-panel-strong);
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      box-shadow: var(--cp-shadow);
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .eyebrow {
+      color: var(--cp-accent);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      margin: 0 0 8px;
+    }
+    h1 { font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.05; margin: 0; }
+    .lede { color: var(--cp-text-muted); font-size: 1.08rem; max-width: 780px; margin: 16px 0 0; }
+    .stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+    .stat {
+      border: 1px solid var(--cp-border);
+      background: var(--cp-surface-soft);
+      border-radius: 0.625rem;
+      padding: 10px 14px;
+      color: var(--cp-text-muted);
+      font-size: 0.92rem;
+    }
+    .stat strong { color: var(--cp-text); }
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 12px;
+      margin: 22px 0;
+      align-items: center;
+    }
+    .search {
+      width: 100%;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      padding: 12px 14px;
+      font: inherit;
+    }
+    .filterRow { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip, button {
+      border: 1px solid var(--cp-border);
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      border-radius: 0.625rem;
+      padding: 10px 12px;
+      font: inherit;
+      cursor: pointer;
+    }
+    .chip.active, .copyBtn {
+      background: var(--cp-accent);
+      border-color: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      font-weight: 700;
+    }
+    .chip:hover, button:hover { border-color: var(--cp-border-strong); }
+    .copyBtn:hover { background: var(--cp-accent-hover); border-color: var(--cp-accent-hover); }
+    .section { margin-top: 34px; }
+    .sectionHead { display: flex; justify-content: space-between; gap: 16px; align-items: end; margin-bottom: 14px; }
+    h2 { margin: 0; font-size: 1.45rem; }
+    .sectionDesc { color: var(--cp-text-muted); margin: 4px 0 0; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .card {
+      background: var(--cp-surface);
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      box-shadow: var(--cp-shadow);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 230px;
+    }
+    .cardTop { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 0.625rem;
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+      padding: 4px 9px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .title { font-weight: 700; font-size: 1rem; margin: 0; }
+    .prompt {
+      white-space: pre-wrap;
+      background: var(--cp-surface-soft);
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      color: var(--cp-text);
+      padding: 14px;
+      margin: 0;
+      flex: 1;
+      font-size: 0.96rem;
+    }
+    .meta { color: var(--cp-text-muted); font-size: 0.86rem; margin: 0; }
+    .empty { display: none; border: 1px dashed var(--cp-border-strong); border-radius: 16px; padding: 28px; text-align: center; color: var(--cp-text-muted); background: var(--cp-surface); }
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: var(--cp-panel-strong);
+      color: var(--cp-text);
+      border: 1px solid var(--cp-border);
+      box-shadow: var(--cp-shadow);
+      border-radius: 0.625rem;
+      padding: 12px 14px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 160ms ease, transform 160ms ease;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .footer { color: var(--cp-text-muted); font-size: 0.88rem; margin-top: 34px; text-align: center; }
+    .hidden { display: none; }
+    @media (max-width: 780px) {
+      .hero { padding: 24px; }
+      .controls { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
+      .sectionHead { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">Microsoft Copilot Chat for HR</p>
+      <h1>HR Prompt Library</h1>
+      <p class="lede">A shareable collection of ready-to-run prompts for HR professionals. Browse by function, search for a use case, then click copy to paste a prompt into Microsoft Copilot Chat.</p>
+      <div class="stats" aria-label="Prompt library summary">
+        <div class="stat"><strong id="promptCount">35</strong> prompts</div>
+        <div class="stat"><strong>10</strong> HR categories</div>
+        <div class="stat"><strong>1-click</strong> copy</div>
+      </div>
+    </section>
+
+    <section class="controls" aria-label="Search and filters">
+      <input class="search" id="search" type="search" placeholder="Search prompts, e.g. onboarding, benefits, manager, analytics" />
+      <div class="filterRow" id="filters"></div>
+    </section>
+
+    <div id="sections"></div>
+    <div class="empty" id="emptyState">No prompts match that search or filter.</div>
+
+    <p class="footer">Source: Microsoft Copilot Chat for HR hands-on prompt guide, SLB Global HR Session, April 2026.</p>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite">Prompt copied</div>
+
+  <script>
+    const prompts = [
+      { group: "Session Demo Prompts", category: "Talent Acquisition", title: "Senior completions engineer job description", text: "Write a job description for a Senior Completions Engineer in the oil & gas industry, emphasizing SLB's commitment to sustainability and innovation. Include required qualifications, key responsibilities, and a compelling 'why join us' section." },
+      { group: "Session Demo Prompts", category: "HR Business Partners", title: "Difficult performance conversation", text: "Draft talking points for a manager who needs to have a difficult conversation with an employee about missed performance goals. Include how to open the conversation, what to say, and how to close with a clear action plan." },
+      { group: "Session Demo Prompts", category: "Learning & Development", title: "Psychological safety workshop", text: "Create a 2-hour workshop outline on psychological safety for frontline team leads. Include learning objectives, three interactive activities, a short assessment, and a closing reflection exercise." },
+      { group: "Session Demo Prompts", category: "HR Communications", title: "Flexible work announcement", text: "Write a company-wide announcement about a new flexible work policy. The tone should be warm, clear, and inclusive. Include what's changing, why we're making this change, and what employees should do next." },
+      { group: "Session Demo Prompts", category: "Compensation & Benefits", title: "Plain-language benefits policy", text: "Rewrite this benefits policy excerpt in plain language for employees who are not HR professionals. Keep it under 150 words, use simple terms, and highlight the three most important things employees need to know." },
+      { group: "Session Demo Prompts", category: "Employee Relations", title: "Disciplinary conversation coaching", text: "List the five most common mistakes managers make during disciplinary conversations and explain how HR can coach them to avoid each one. Format as a table with the mistake in one column and the coaching tip in the other." },
+
+      { group: "Hands-On Practice", category: "Compensation & Benefits", title: "Open enrollment email", text: "I'm an HR professional preparing for open enrollment. Draft a 3-paragraph email to employees explaining how to use the new benefits portal, what deadlines to know, and where to get help." },
+      { group: "Hands-On Practice", category: "HR Business Partners", title: "HRBP behavioral interview questions", text: "Create 5 behavioral interview questions for a mid-level HR Business Partner role. Focus on change management and influencing without authority." },
+      { group: "Hands-On Practice", category: "HR Communications & Employee Experience", title: "Make it conversational", text: "Make the tone more conversational." },
+      { group: "Hands-On Practice", category: "Learning & Development", title: "Remote onboarding plan", text: "I have a new employee starting next week in a remote role in a different country than their manager. Create a 30-60-90 day onboarding plan that accounts for the time zone difference and cultural integration." },
+      { group: "Hands-On Practice", category: "HR Communications & Employee Experience", title: "Simplify an HR policy", text: "Rewrite this HR policy [paste your policy text here] so it's easier to understand for a front-line employee with no HR background. Use simple language, short sentences, and bullet points." },
+      { group: "Hands-On Practice", category: "HR Communications & Employee Experience", title: "Summarize for email", text: "Now summarize it in 3 bullet points I could put in an email." },
+      { group: "Hands-On Practice", category: "HR Business Partners", title: "Talent review prep", text: "Act as an experienced HR Business Partner. I'm preparing for a talent review meeting with a skeptical business leader. Give me five data-backed arguments for why investing in leadership development reduces attrition, and anticipate the three objections they're most likely to raise." },
+      { group: "Hands-On Practice", category: "Employee Relations", title: "Exit interview themes", text: "I'm going to share anonymized themes from recent exit interviews. Summarize the top 3 retention risks, suggest one HR action for each, and flag any themes that may require escalation to leadership." },
+
+      { group: "More Prompts by HR Function", category: "Talent Acquisition", title: "Recruiter ramp plan", text: "Generate a 30-60-90 day ramp plan for a new recruiter joining our team." },
+      { group: "More Prompts by HR Function", category: "Talent Acquisition", title: "Candidate rejection email", text: "Write a candidate rejection email that is warm, brief, and encourages them to apply for future roles." },
+      { group: "More Prompts by HR Function", category: "Talent Acquisition", title: "Structured interview scorecard", text: "Create a structured interview scorecard template for a [role] position with five competencies and a 1-5 rating scale." },
+      { group: "More Prompts by HR Function", category: "HR Business Partners", title: "Quarterly business review prep", text: "I'm preparing for a quarterly business review with my business leader. Create an agenda and a list of 5 workforce metrics I should be ready to discuss." },
+      { group: "More Prompts by HR Function", category: "HR Business Partners", title: "Performance management FAQ", text: "Draft a manager FAQ document about our new performance management process. Anticipate the 8 most common questions and provide clear answers." },
+      { group: "More Prompts by HR Function", category: "HR Business Partners", title: "Org redesign RACI", text: "Help me create a RACI matrix for an upcoming org redesign project involving HR, Finance, and the business." },
+      { group: "More Prompts by HR Function", category: "Learning & Development", title: "Feedback microlearning", text: "Design a 15-minute microlearning module on giving effective feedback. Include a hook, key content, one activity, and a takeaway." },
+      { group: "More Prompts by HR Function", category: "Learning & Development", title: "Compliance quiz questions", text: "Create 10 scenario-based quiz questions for a compliance training course on workplace harassment." },
+      { group: "More Prompts by HR Function", category: "Learning & Development", title: "Skills gap framework", text: "Write a skills gap analysis framework for identifying development needs in a team of 50 mid-level managers." },
+      { group: "More Prompts by HR Function", category: "HR Communications & Employee Experience", title: "PTO policy email versions", text: "Draft three versions of an email announcing a change to our PTO policy - one for employees, one for managers, and one for executives." },
+      { group: "More Prompts by HR Function", category: "HR Communications & Employee Experience", title: "Change sentiment survey", text: "Write a survey with 8 questions to measure employee sentiment after an organizational change." },
+      { group: "More Prompts by HR Function", category: "HR Communications & Employee Experience", title: "AI town hall talking points", text: "Create talking points for HR to use in town halls addressing concerns about AI in the workplace." },
+      { group: "More Prompts by HR Function", category: "Compensation & Benefits", title: "Pension plan explanation", text: "Explain the difference between a defined benefit and defined contribution pension plan in plain language for an employee who has never had this explained before." },
+      { group: "More Prompts by HR Function", category: "Compensation & Benefits", title: "Total rewards summary", text: "Create a total rewards statement summary template that highlights base pay, bonus, benefits, and learning budget." },
+      { group: "More Prompts by HR Function", category: "Compensation & Benefits", title: "Merit review FAQ", text: "Write an FAQ (10 questions) for employees about our new merit review cycle." },
+      { group: "More Prompts by HR Function", category: "Employee Relations", title: "Formal grievance process", text: "Summarize the key steps in a formal grievance process and what documentation HR should keep at each stage." },
+      { group: "More Prompts by HR Function", category: "Employee Relations", title: "Disciplinary policy memo", text: "Draft a memo to managers explaining the new disciplinary policy, what's changed from the old policy, and what they need to do differently." },
+      { group: "More Prompts by HR Function", category: "Employee Relations", title: "Harassment concern checklist", text: "Create a checklist HR should follow when an employee raises a workplace harassment concern." },
+      { group: "More Prompts by HR Function", category: "Workforce Planning & HR Analytics", title: "HR metrics explained", text: "Explain what attrition rate, time-to-fill, and offer acceptance rate mean, and what a healthy benchmark looks like for each." },
+      { group: "More Prompts by HR Function", category: "Workforce Planning & HR Analytics", title: "Workforce planning presentation", text: "Help me structure a workforce planning presentation for senior leadership. What sections should I include and what data do I need?" },
+      { group: "More Prompts by HR Function", category: "Workforce Planning & HR Analytics", title: "Q1 hiring trends summary", text: "Write an executive summary for a workforce analytics report showing Q1 hiring trends." }
+    ];
+
+    const groupDescriptions = {
+      "Session Demo Prompts": "Prompts used for live demonstrations across core HR scenarios.",
+      "Hands-On Practice": "Practice prompts mapped to the HR functions where they are most useful.",
+      "More Prompts by HR Function": "Function-specific prompts HR professionals can run immediately or adapt."
+    };
+
+    const sectionsEl = document.getElementById("sections");
+    const filtersEl = document.getElementById("filters");
+    const searchEl = document.getElementById("search");
+    const toastEl = document.getElementById("toast");
+    const emptyEl = document.getElementById("emptyState");
+    const promptCountEl = document.getElementById("promptCount");
+    let activeCategory = "All";
+
+    const categories = ["All", ...Array.from(new Set(prompts.map(prompt => prompt.category)))];
+    promptCountEl.textContent = prompts.length;
+
+    filtersEl.innerHTML = categories.map(category =>
+      `<button class="chip${category === "All" ? " active" : ""}" type="button" data-category="${escapeAttr(category)}">${escapeHtml(category)}</button>`
+    ).join("");
+
+    filtersEl.addEventListener("click", event => {
+      const button = event.target.closest("button[data-category]");
+      if (!button) return;
+      activeCategory = button.dataset.category;
+      document.querySelectorAll(".chip").forEach(chip => chip.classList.toggle("active", chip === button));
+      render();
+    });
+
+    searchEl.addEventListener("input", render);
+
+    sectionsEl.addEventListener("click", async event => {
+      const button = event.target.closest("button[data-copy]");
+      if (!button) return;
+      const prompt = prompts[Number(button.dataset.copy)];
+      await navigator.clipboard.writeText(prompt.text);
+      const original = button.textContent;
+      button.textContent = "Copied";
+      showToast(`Copied: ${prompt.title}`);
+      setTimeout(() => { button.textContent = original; }, 1200);
+    });
+
+    function render() {
+      const query = searchEl.value.trim().toLowerCase();
+      const filtered = prompts.filter(prompt => {
+        const matchesCategory = activeCategory === "All" || prompt.category === activeCategory;
+        const haystack = `${prompt.group} ${prompt.category} ${prompt.title} ${prompt.text}`.toLowerCase();
+        return matchesCategory && (!query || haystack.includes(query));
+      });
+
+      const groups = Array.from(new Set(prompts.map(prompt => prompt.group)));
+      sectionsEl.innerHTML = groups.map(group => {
+        const groupPrompts = filtered.filter(prompt => prompt.group === group);
+        if (!groupPrompts.length) return "";
+        return `
+          <section class="section">
+            <div class="sectionHead">
+              <div>
+                <h2>${escapeHtml(group)}</h2>
+                <p class="sectionDesc">${escapeHtml(groupDescriptions[group] || "")}</p>
+              </div>
+              <span class="stat"><strong>${groupPrompts.length}</strong> shown</span>
+            </div>
+            <div class="grid">
+              ${groupPrompts.map(prompt => card(prompt, prompts.indexOf(prompt))).join("")}
+            </div>
+          </section>`;
+      }).join("");
+
+      emptyEl.style.display = filtered.length ? "none" : "block";
+    }
+
+    function card(prompt, index) {
+      return `
+        <article class="card">
+          <div class="cardTop">
+            <div>
+              <span class="tag">${escapeHtml(prompt.category)}</span>
+              <p class="title">${escapeHtml(prompt.title)}</p>
+            </div>
+            <button class="copyBtn" type="button" data-copy="${index}" aria-label="Copy prompt: ${escapeAttr(prompt.title)}">Copy</button>
+          </div>
+          <p class="prompt">${escapeHtml(prompt.text)}</p>
+          <p class="meta">Paste into Microsoft Copilot Chat and add your own context where useful.</p>
+        </article>`;
+    }
+
+    function showToast(message) {
+      toastEl.textContent = message;
+      toastEl.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toastEl.classList.remove("show"), 1800);
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char]));
+    }
+
+    function escapeAttr(value) { return escapeHtml(value); }
+
+    render();
+  </script>
+</body>
+</html>
